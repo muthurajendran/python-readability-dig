@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from collections import defaultdict
 from cleaners import html_cleaner, clean_attributes
-from htmls import build_doc, get_body, get_title
+from htmls import build_doc, get_body, get_title, shorten_title
 from lxml.etree import tostring, tounicode
 import logging
 import re
@@ -15,12 +15,12 @@ REGEXES = {
 	'positiveRe': re.compile('caption|article|body|content|entry|hentry|page|pagination|post|text',re.I),
 	'negativeRe': re.compile('adwrapper|ad_wrapper|share|bookmark|nav|combx|comment|contact|foot|footer|footnote|link|media|meta|promo|related|scroll|shoutbox|sponsor|tags|widget',re.I),
 	'divToPElementsRe': re.compile('<(a|blockquote|dl|div|img|ol|p|pre|table|ul)',re.I),
-	'replaceBrsRe': re.compile('(<br[^>]*>[ \n\r\t]*){2,}',re.I),
-	'replaceFontsRe': re.compile('<(\/?)font[^>]*>',re.I),
-	'trimRe': re.compile('^\s+|\s+$/'),
-	'normalizeRe': re.compile('\s{2,}/'),
-	'killBreaksRe': re.compile('(<br\s*\/?>(\s|&nbsp;?)*){1,}/'),
-	'videoRe': re.compile('http:\/\/(www\.)?(youtube|vimeo)\.com', re.I),
+	#'replaceBrsRe': re.compile('(<br[^>]*>[ \n\r\t]*){2,}',re.I),
+	#'replaceFontsRe': re.compile('<(\/?)font[^>]*>',re.I),
+	#'trimRe': re.compile('^\s+|\s+$/'),
+	#'normalizeRe': re.compile('\s{2,}/'),
+	#'killBreaksRe': re.compile('(<br\s*\/?>(\s|&nbsp;?)*){1,}/'),
+	#'videoRe': re.compile('http:\/\/(www\.)?(youtube|vimeo)\.com', re.I),
 }
 
 def describe(node):
@@ -36,6 +36,15 @@ def log_candidates(candidates, print_format=""):
 
 #def _text(node):
 #	return " ".join(node.findall(text=True))
+
+def to_int(x):
+	if not x: return None
+	x = x.strip()
+	if x.endswith('px'):
+		return int(x[:-2]) 
+	if x.endswith('em'):
+		return int(x[:-2]) * 12 
+	return int(x)
 
 class Unparseable(ValueError):
 	pass
@@ -71,6 +80,9 @@ class Document:
 	
 	def title(self):
 		return get_title(self._html(True))
+
+	def short_title(self):
+		return shorten_title(self._html(True))
 
 	def summary(self):
 		try:
@@ -263,9 +275,10 @@ class Document:
 
 	def sanitize(self, node, candidates):
 		for header in self.tags(node, "h1", "h2", "h3", "h4", "h5", "h6"):
-			if self.class_weight(header) < 0 or self.get_link_density(header) > 0.33: header.drop_tree()
+			if self.class_weight(header) < 0 or self.get_link_density(header) > 0.33: 
+				header.drop_tree()
 
-		for elem in self.tags(node, "form", "iframe"):
+		for elem in self.tags(node, "form", "iframe", "textarea"):
 			elem.drop_tree()
 		allowed = {}
 		# Conditionally clean <table>s, <ul>s, and <div>s
@@ -338,7 +351,7 @@ class Document:
 						height = img.get('height')
 						width = img.get('width')
 						self.debug ("height %s width %s" %(repr(height), repr(width)))
-						if (height and int(height) >= 50) or (width and int(width) >= 50):
+						if to_int(height) >= 100 or to_int(width) >= 100:
 							valid_img = True
 							self.debug("valid image" + tounicode(img))
 							break

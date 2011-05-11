@@ -46,38 +46,54 @@ def get_title(doc):
     
     return norm_title(title)
 
-def shortify_title(doc):
+def add_match(collection, text, orig):
+    text = norm_title(text)
+    if len(text.split()) >= 2 and len(text) >= 15:
+        if text.replace('"', '') in orig.replace('"', ''):
+            collection.add(text)
+
+def shorten_title(doc):
     title = doc.find('.//title').text
     if not title:
-        return '[no-title]'
+        return ''
     
     title = orig = norm_title(title)
-    
-    for delimiter in [' | ', ' - ', ' :: ', ' / ']:
-        if delimiter in title:
-            parts = orig.split(delimiter)
-            if len(parts[0].split()) >= 4:
-                title = parts[0]
-                break
-            elif len(parts[-1].split()) >= 4:
-                title = parts[-1]
-                break
-    else:
-        if ': ' in title:
-            parts = orig.split(': ')
-            if len(parts[-1].split()) >= 4:
-                title = parts[-1]
-            else:
-                title = orig.split(': ', 1)[1]
 
-    if len(title.split()) <= 4:
-        h1 = list(doc.iterfind('.//h1'))
-        if len(h1) == 1:
-            title = norm_title(h1[0].text)
-        elif len(h1) == 0:
-            h2 = list(doc.iterfind('.//h2'))
-            if len(h1) == 1:
-                title = norm_title(h2[1].text)
+    candidates = set()
+
+    for item in ['.//h1', './/h2', './/h3']:
+        for e in list(doc.iterfind(item)):
+            if e.text:
+                add_match(candidates, e.text, orig)
+            if e.text_content():
+                add_match(candidates, e.text_content(), orig)
+
+    for item in ['#title', '#head', '#heading', '.pageTitle', '.news_title', '.title', '.head', '.heading', '.contentheading', '.small_header_red']:
+        for e in doc.cssselect(item):
+            if e.text:
+                add_match(candidates, e.text, orig)
+            if e.text_content():
+                add_match(candidates, e.text_content(), orig)
+                
+    if candidates:
+        title = sorted(candidates, key=len)[-1]
+    else:
+        for delimiter in [' | ', ' - ', ' :: ', ' / ']:
+            if delimiter in title:
+                parts = orig.split(delimiter)
+                if len(parts[0].split()) >= 4:
+                    title = parts[0]
+                    break
+                elif len(parts[-1].split()) >= 4:
+                    title = parts[-1]
+                    break
+        else:
+            if ': ' in title:
+                parts = orig.split(': ')
+                if len(parts[-1].split()) >= 4:
+                    title = parts[-1]
+                else:
+                    title = orig.split(': ', 1)[1]
 
     if not 15 < len(title) < 150:
         return orig
