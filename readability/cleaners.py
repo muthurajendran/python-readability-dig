@@ -2,7 +2,7 @@
 import re
 from lxml.html.clean import Cleaner
 
-bad_attrs = ['width', 'height', 'style', '[-a-z]*color', 'background[-a-z]*']
+bad_attrs = ['width', 'height', 'style', '[-a-z]*color', 'background[-a-z]*', 'on*']
 single_quoted = "'[^']+'"
 double_quoted = '"[^"]+"'
 non_space = '[^ "\'>]+'
