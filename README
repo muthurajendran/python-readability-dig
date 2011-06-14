@@ -13,3 +13,10 @@ Based on:
  - Ruby port by starrhorne and iterationlabs
  - Python port by gfxmonk ( https://github.com/gfxmonk/python-readability , based on BeautifulSoup )
  - Decruft effort to move to lxml ( http://www.minvolai.com/blog/decruft-arc90s-readability-in-python/ )
+
+Usage:
+
+    import urllib
+    html = urllib.urlopen(url).read()
+    readable_article = Document(html).summary()
+    readable_title = Document(html).short_title()
