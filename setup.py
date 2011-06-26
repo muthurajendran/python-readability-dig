@@ -3,15 +3,15 @@ from distutils.core import setup
 
 
 setup(
-    name="python-readability",
-    author="Tim Cuthbertson",
-    author_email="tim3d.junk+github@gmail.com",
+    name="lxml-readability",
+    author="Yuri Baburov",
+    author_email="burchik+github@gmail.com",
     description="python port of arc90's readability bookmarklet",
     long_description=open("README").read(),
     license="Apache License 2.0",
-    url="http://github.com/gfxmonk/python-readability",
+    url="http://github.com/buriy/python-readability",
     packages=[
-        "readability",
+        "lxml_readability",
     ],
     classifiers=[
         "Environment :: Web Environment",
