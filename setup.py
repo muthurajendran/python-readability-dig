@@ -4,6 +4,7 @@ from distutils.core import setup
 
 setup(
     name="lxml-readability",
+    version="0.1dev",
     author="Yuri Baburov",
     author_email="burchik+github@gmail.com",
     description="python port of arc90's readability bookmarklet",
