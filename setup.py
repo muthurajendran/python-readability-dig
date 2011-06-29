@@ -1,6 +1,5 @@
 #!/usr/bin/env python
-from distutils.core import setup
-
+from setuptools import setup, find_packages
 
 setup(
     name="lxml-readability",
@@ -11,9 +10,7 @@ setup(
     long_description=open("README").read(),
     license="Apache License 2.0",
     url="http://github.com/buriy/python-readability",
-    packages=[
-        "lxml_readability",
-    ],
+    packages=find_packages(),
     classifiers=[
         "Environment :: Web Environment",
         "Intended Audience :: Developers",
