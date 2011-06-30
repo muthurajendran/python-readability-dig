@@ -496,8 +496,9 @@ def main():
 		file = urllib.urlopen(options.url)
 	else:
 		file = open(args[0])
+        enc = sys.stdout.encoding or 'utf-8'
 	try:
-		print Document(file.read(), debug=options.verbose).summary().encode('ascii','ignore')
+		print Document(file.read(), debug=options.verbose).summary().encode(enc, 'replace')
 	finally:
 		file.close()
 

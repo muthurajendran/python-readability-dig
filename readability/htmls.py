@@ -10,12 +10,12 @@ logging.getLogger().setLevel(logging.DEBUG)
 utf8_parser = lxml.html.HTMLParser(encoding='utf-8')
 
 def build_doc(page):
-    if type(page) != unicode:
-        enc = get_encoding(page)
-        page_enc = page.decode(enc, 'replace')
+    if isinstance(page, unicode):
+        page_unicode = page
     else:
-        page_enc = page
-    doc = lxml.html.document_fromstring(page_enc.encode('utf-8'), parser=utf8_parser)
+        enc = get_encoding(page)
+        page_unicode = page.decode(enc, 'replace')
+    doc = lxml.html.document_fromstring(page_unicode.encode('utf-8', 'replace'), parser=utf8_parser)
     return doc
 
 def js_re(src, pattern, flags, repl):
