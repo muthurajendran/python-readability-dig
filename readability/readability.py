@@ -120,7 +120,9 @@ class Document:
 						continue
 					else:
 						logging.debug("Ruthless and lenient parsing did not work. Returning raw html")
-						article = self.html.find('body') or self.html
+						article = self.html.find('body')
+                                                if article is None:
+                                                    article = self.html
 
 				cleaned_article = self.sanitize(article, candidates)
 				of_acceptable_length = len(cleaned_article or '') >= (self.options['retry_length'] or self.RETRY_LENGTH)
