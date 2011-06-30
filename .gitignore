@@ -1,1 +1,4 @@
 *.pyc
+build
+dist
+readability_lxml.egg-info
