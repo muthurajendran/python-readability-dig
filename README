@@ -16,7 +16,11 @@ Based on:
 
 Usage:
 
-    import urllib
-    html = urllib.urlopen(url).read()
-    readable_article = Document(html).summary()
-    readable_title = Document(html).short_title()
+import urllib
+html = urllib.urlopen(url).read()
+readable_article = Document(html).summary()
+readable_title = Document(html).short_title()
+
+Command-line usage:
+
+python -m readability.readability -u http://yoursite.com/yourpage
