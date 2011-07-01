@@ -16,14 +16,14 @@ Based on:
  - "BR to P" fix from readability.js which improves quality for smaller texts.
  - Github users contributions.
 
-Usage:
+Usage::
 
-from readability.readability import Document
-import urllib
-html = urllib.urlopen(url).read()
-readable_article = Document(html).summary()
-readable_title = Document(html).short_title()
+    from readability.readability import Document
+    import urllib
+    html = urllib.urlopen(url).read()
+    readable_article = Document(html).summary()
+    readable_title = Document(html).short_title()
 
-Command-line usage:
+Command-line usage::
 
-python -m readability.readability -u http://pypi.python.org/pypi/readability-lxml
+    python -m readability.readability -u http://pypi.python.org/pypi/readability-lxml
