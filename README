@@ -16,6 +16,12 @@ Based on:
  - "BR to P" fix from readability.js which improves quality for smaller texts.
  - Github users contributions.
 
+Installation::
+
+    easy_install readability-xml
+    or
+    pip install readability-xml
+
 Usage::
 
     from readability.readability import Document
