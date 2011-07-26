@@ -121,8 +121,8 @@ class Document:
 					else:
 						logging.debug("Ruthless and lenient parsing did not work. Returning raw html")
 						article = self.html.find('body')
-                                                if article is None:
-                                                    article = self.html
+						if article is None:
+							article = self.html
 
 				cleaned_article = self.sanitize(article, candidates)
 				of_acceptable_length = len(cleaned_article or '') >= (self.options['retry_length'] or self.RETRY_LENGTH)
@@ -497,8 +497,8 @@ def main():
 		import urllib
 		file = urllib.urlopen(options.url)
 	else:
-		file = open(args[0])
-        enc = sys.stdout.encoding or 'utf-8'
+		file = open(args[0], 'rt')
+	enc = sys.__stdout__.encoding or 'utf-8'
 	try:
 		print Document(file.read(), debug=options.verbose).summary().encode(enc, 'replace')
 	finally:

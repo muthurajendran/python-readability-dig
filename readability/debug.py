@@ -23,4 +23,3 @@ def describe(node, depth=2):
     if depth and node.getparent() is not None:
         return name+' - '+describe(node.getparent(), depth-1)
     return name
-

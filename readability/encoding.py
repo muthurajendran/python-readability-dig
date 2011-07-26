@@ -19,4 +19,3 @@ def get_encoding(page):
     if enc == 'MacCyrillic':
         enc = 'cp1251'
     return enc
-

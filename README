@@ -18,9 +18,9 @@ Based on:
 
 Installation::
 
-    easy_install readability-xml
+    easy_install readability-lxml
     or
-    pip install readability-xml
+    pip install readability-lxml
 
 Usage::
 
