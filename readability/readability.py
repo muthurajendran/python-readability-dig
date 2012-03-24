@@ -159,7 +159,7 @@ class Document:
 
 				if node_length > 80 and link_density < 0.25:
 					append = True
-				elif node_length < 80 and link_density == 0 and re.search('\.( |$)', node_content):
+				elif node_length <= 80 and link_density == 0 and re.search('\.( |$)', node_content):
 					append = True
 
 			if append:
