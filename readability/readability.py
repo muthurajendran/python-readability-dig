@@ -280,6 +280,8 @@ class Document:
 	def remove_unlikely_candidates(self):
 		for elem in self.html.iter():
 			s = "%s %s" % (elem.get('class', ''), elem.get('id', ''))
+			if len(s) < 2:
+				continue
 			#self.debug(s)
 			if REGEXES['unlikelyCandidatesRe'].search(s) and (not REGEXES['okMaybeItsACandidateRe'].search(s)) and elem.tag != 'body':
 				self.debug("Removing unlikely candidate - %s" % describe(elem))
