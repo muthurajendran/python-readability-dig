@@ -98,7 +98,6 @@ class Document:
             ruthless = True
             while True:
                 self._html(True)
-
                 for i in self.tags(self.html, 'script', 'style'):
                     i.drop_tree()
                 for i in self.tags(self.html, 'body'):
@@ -111,7 +110,8 @@ class Document:
                 best_candidate = self.select_best_candidate(candidates)
 
                 if best_candidate:
-                    article = self.get_article(candidates, best_candidate)
+                    article = self.get_article(candidates, best_candidate,
+                            document_only=document_only)
                 else:
                     if ruthless:
                         logging.debug("ruthless removal did not work. ")
@@ -136,12 +136,15 @@ class Document:
             logging.exception('error getting summary: ' )
             raise Unparseable(str(e)), None, sys.exc_info()[2]
 
-    def get_article(self, candidates, best_candidate):
+    def get_article(self, candidates, best_candidate, document_only=False):
         # Now that we have the top candidate, look through its siblings for content that might also be related.
         # Things like preambles, content split by ads that we removed, etc.
-
         sibling_score_threshold = max([10, best_candidate['content_score'] * 0.2])
-        output = document_fromstring('<div/>')
+        # create a new html document with a html->body->div
+        if document_only:
+            output = fragment_fromstring('<div/>')
+        else:
+            output = document_fromstring('<div/>')
         best_elem = best_candidate['elem']
         for sibling in best_elem.getparent().getchildren():
             #if isinstance(sibling, NavigableString): continue#in lxml there no concept of simple text
@@ -163,7 +166,12 @@ class Document:
                     append = True
 
             if append:
-                output.append(sibling)
+                # We don't want to append directly to output, but the div
+                # in html->body->div
+                if document_only:
+                    output.append(sibling)
+                else:
+                    output.getchildren()[0].getchildren()[0].append(sibling)
         #if output is not None:
         #    output.append(best_elem)
         return output
@@ -454,13 +462,7 @@ class Document:
             if not (self.options['attributes']):
                 #el.attrib = {} #FIXME:Checkout the effects of disabling this
                 pass
-        # There can be two nodes here. We really want to tounicode only one of
-        # them.
-        # To start with let's hack it to get the longest tree as our document.
-        if len(node.getchildren()) > 1:
-            children = node.getchildren()
-            sorted_list = sorted(children, key=len, reverse=True)
-            node = sorted_list[0]
+
         return clean_attributes(tounicode(node))
 
 

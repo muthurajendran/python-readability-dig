@@ -21,19 +21,19 @@ class TestArticleOnly(unittest.TestCase):
 
     """
 
-    def setUp(self):
-        """"""
-        pass
-
-    def tearDown(self):
-        """"""
-        pass
-
     def test_si_sample(self):
+        """Using the si sample, load article with only opening body element"""
+        sample = load_sample('si-game.sample.html')
+        doc = Document(
+            sample,
+            url='http://sportsillustrated.cnn.com/baseball/mlb/gameflash/2012/04/16/40630_preview.html')
+        res = doc.summary()
+        self.assertEqual('<html><body><div><div class', res[0:27])
+
+    def test_si_sample_doc_only(self):
         """Using the si sample, make sure we can get the article alone."""
         sample = load_sample('si-game.sample.html')
-        doc = Document(sample)
+        doc = Document(sample, url='http://sportsillustrated.cnn.com/baseball/mlb/gameflash/2012/04/16/40630_preview.html')
         res = doc.summary(document_only=True)
-
-        self.assertEqual('<div class="', res[0:12])
+        self.assertEqual('<div><div class="', res[0:17])
 
