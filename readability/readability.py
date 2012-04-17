@@ -1,21 +1,32 @@
 #!/usr/bin/env python
-from cleaners import html_cleaner, clean_attributes
-from collections import defaultdict
-from htmls import build_doc, get_body, get_title, shorten_title
-from lxml.etree import tostring, tounicode
-from lxml.html import fragment_fromstring, document_fromstring
 import logging
 import re
 import sys
 
+from collections import defaultdict
+from lxml.etree import tostring
+from lxml.etree import tounicode
+from lxml.html import document_fromstring
+from lxml.html import fragment_fromstring
+
+from cleaners import clean_attributes
+from cleaners import html_cleaner
+from htmls import build_doc
+from htmls import get_body
+from htmls import get_title
+from htmls import shorten_title
+
+
 logging.basicConfig(level=logging.INFO)
+log = logging.getLogger()
+
 
 REGEXES = {
-    'unlikelyCandidatesRe': re.compile('combx|comment|community|disqus|extra|foot|header|menu|remark|rss|shoutbox|sidebar|sponsor|ad-break|agegate|pagination|pager|popup|tweet|twitter',re.I),
-    'okMaybeItsACandidateRe': re.compile('and|article|body|column|main|shadow',re.I),
-    'positiveRe': re.compile('article|body|content|entry|hentry|main|page|pagination|post|text|blog|story',re.I),
-    'negativeRe': re.compile('combx|comment|com-|contact|foot|footer|footnote|masthead|media|meta|outbrain|promo|related|scroll|shoutbox|sidebar|sponsor|shopping|tags|tool|widget',re.I),
-    'divToPElementsRe': re.compile('<(a|blockquote|dl|div|img|ol|p|pre|table|ul)',re.I),
+    'unlikelyCandidatesRe': re.compile('combx|comment|community|disqus|extra|foot|header|menu|remark|rss|shoutbox|sidebar|sponsor|ad-break|agegate|pagination|pager|popup|tweet|twitter', re.I),
+    'okMaybeItsACandidateRe': re.compile('and|article|body|column|main|shadow', re.I),
+    'positiveRe': re.compile('article|body|content|entry|hentry|main|page|pagination|post|text|blog|story', re.I),
+    'negativeRe': re.compile('combx|comment|com-|contact|foot|footer|footnote|masthead|media|meta|outbrain|promo|related|scroll|shoutbox|sidebar|sponsor|shopping|tags|tool|widget', re.I),
+    'divToPElementsRe': re.compile('<(a|blockquote|dl|div|img|ol|p|pre|table|ul)', re.I),
     #'replaceBrsRe': re.compile('(<br[^>]*>[ \n\r\t]*){2,}',re.I),
     #'replaceFontsRe': re.compile('<(\/?)font[^>]*>',re.I),
     #'trimRe': re.compile('^\s+|\s+$/'),
@@ -25,21 +36,29 @@ REGEXES = {
     #skipFootnoteLink:      /^\s*(\[?[a-z0-9]{1,2}\]?|^|edit|citation needed)\s*$/i,
 }
 
+
+class Unparseable(ValueError):
+    pass
+
+
 def describe(node, depth=1):
     if not hasattr(node, 'tag'):
         return "[%s]" % type(node)
     name = node.tag
-    if node.get('id', ''): name += '#'+node.get('id')
+    if node.get('id', ''):
+        name += '#' + node.get('id')
     if node.get('class', ''):
-        name += '.' + node.get('class').replace(' ','.')
+        name += '.' + node.get('class').replace(' ', '.')
     if name[:4] in ['div#', 'div.']:
         name = name[3:]
     if depth and node.getparent() is not None:
-        return name+' - '+describe(node.getparent(), depth-1)
+        return name + ' - ' + describe(node.getparent(), depth - 1)
     return name
 
+
 def to_int(x):
-    if not x: return None
+    if not x:
+        return None
     x = x.strip()
     if x.endswith('px'):
         return int(x[:-2])
@@ -47,26 +66,37 @@ def to_int(x):
         return int(x[:-2]) * 12
     return int(x)
 
+
 def clean(text):
     text = re.sub('\s*\n\s*', '\n', text)
     text = re.sub('[ \t]{2,}', ' ', text)
     return text.strip()
 
+
 def text_length(i):
     return len(clean(i.text_content() or ""))
 
-class Unparseable(ValueError):
-    pass
 
 class Document:
+    """Class to build a etree document out of html."""
     TEXT_LENGTH_THRESHOLD = 25
     RETRY_LENGTH = 250
 
     def __init__(self, input, **options):
+        """Generate the document
+
+        :param input: string of the html content.
+
+        kwargs:
+            - attributes:
+            - debug: output debug messages
+            - min_text_length:
+            - retry_length:
+            - url: will allow adjusting links to be absolute
+
+        """
         self.input = input
-        self.options = defaultdict(lambda: None)
-        for k, v in options.items():
-            self.options[k] = v
+        self.options = options
         self.html = None
 
     def _html(self, force=False):
@@ -77,7 +107,7 @@ class Document:
     def _parse(self, input):
         doc = build_doc(input)
         doc = html_cleaner.clean_html(doc)
-        base_href = self.options['url']
+        base_href = self.options.get('url', None)
         if base_href:
             doc.make_links_absolute(base_href, resolve_base_href=True)
         else:
@@ -94,6 +124,12 @@ class Document:
         return shorten_title(self._html(True))
 
     def summary(self, document_only=False):
+        """Generate the summary of the html docuemnt
+
+        :param document_only: return only the div of the document, don't wrap
+        in html and body tags.
+
+        """
         try:
             ruthless = True
             while True:
@@ -114,32 +150,43 @@ class Document:
                             document_only=document_only)
                 else:
                     if ruthless:
-                        logging.debug("ruthless removal did not work. ")
+                        log.debug("ruthless removal did not work. ")
                         ruthless = False
-                        self.debug("ended up stripping too much - going for a safer _parse")
+                        self.debug(
+                            ("ended up stripping too much - "
+                             "going for a safer _parse"))
                         # try again
                         continue
                     else:
-                        logging.debug("Ruthless and lenient parsing did not work. Returning raw html")
+                        log.debug(
+                            ("Ruthless and lenient parsing did not work. "
+                             "Returning raw html"))
                         article = self.html.find('body')
                         if article is None:
                             article = self.html
                 cleaned_article = self.sanitize(article, candidates)
-                of_acceptable_length = len(cleaned_article or '') >= (self.options['retry_length'] or self.RETRY_LENGTH)
+                article_length = len(cleaned_article or '')
+                retry_length = self.options.get(
+                    'retry_length',
+                    self.RETRY_LENGTH)
+                of_acceptable_length = article_length >= retry_length
                 if ruthless and not of_acceptable_length:
                     ruthless = False
-                    continue # try again
+                    # Loop through and try again.
+                    continue
                 else:
                     return cleaned_article
         except StandardError, e:
-            #logging.exception('error getting summary: ' + str(traceback.format_exception(*sys.exc_info())))
-            logging.exception('error getting summary: ' )
+            log.exception('error getting summary: ')
             raise Unparseable(str(e)), None, sys.exc_info()[2]
 
     def get_article(self, candidates, best_candidate, document_only=False):
-        # Now that we have the top candidate, look through its siblings for content that might also be related.
+        # Now that we have the top candidate, look through its siblings for
+        # content that might also be related.
         # Things like preambles, content split by ads that we removed, etc.
-        sibling_score_threshold = max([10, best_candidate['content_score'] * 0.2])
+        sibling_score_threshold = max([
+            10,
+            best_candidate['content_score'] * 0.2])
         # create a new html document with a html->body->div
         if document_only:
             output = fragment_fromstring('<div/>')
@@ -147,12 +194,14 @@ class Document:
             output = document_fromstring('<div/>')
         best_elem = best_candidate['elem']
         for sibling in best_elem.getparent().getchildren():
-            #if isinstance(sibling, NavigableString): continue#in lxml there no concept of simple text
+            # in lxml there no concept of simple text
+            # if isinstance(sibling, NavigableString): continue
             append = False
             if sibling is best_elem:
                 append = True
-            sibling_key = sibling #HashableElement(sibling)
-            if sibling_key in candidates and candidates[sibling_key]['content_score'] >= sibling_score_threshold:
+            sibling_key = sibling  # HashableElement(sibling)
+            if sibling_key in candidates and \
+                candidates[sibling_key]['content_score'] >= sibling_score_threshold:
                 append = True
 
             if sibling.tag == "p":
@@ -162,7 +211,9 @@ class Document:
 
                 if node_length > 80 and link_density < 0.25:
                     append = True
-                elif node_length <= 80 and link_density == 0 and re.search('\.( |$)', node_content):
+                elif node_length <= 80 \
+                    and link_density == 0 \
+                    and re.search('\.( |$)', node_content):
                     append = True
 
             if append:
@@ -180,14 +231,15 @@ class Document:
         sorted_candidates = sorted(candidates.values(), key=lambda x: x['content_score'], reverse=True)
         for candidate in sorted_candidates[:5]:
             elem = candidate['elem']
-            self.debug("Top 5 : %6.3f %s" % (candidate['content_score'], describe(elem)))
+            self.debug("Top 5 : %6.3f %s" % (
+                candidate['content_score'],
+                describe(elem)))
 
         if len(sorted_candidates) == 0:
             return None
 
         best_candidate = sorted_candidates[0]
         return best_candidate
-
 
     def get_link_density(self, elem):
         link_length = 0
@@ -199,10 +251,10 @@ class Document:
         return float(link_length) / max(total_length, 1)
 
     def score_paragraphs(self, ):
-        MIN_LEN = self.options.get('min_text_length', self.TEXT_LENGTH_THRESHOLD)
+        MIN_LEN = self.options.get(
+            'min_text_length',
+            self.TEXT_LENGTH_THRESHOLD)
         candidates = {}
-        #self.debug(str([describe(node) for node in self.tags(self.html, "div")]))
-
         ordered = []
         for elem in self.tags(self._html(), "p", "pre", "td"):
             parent_node = elem.getparent()
@@ -213,7 +265,8 @@ class Document:
             inner_text = clean(elem.text_content() or "")
             inner_text_len = len(inner_text)
 
-            # If this paragraph is less than 25 characters, don't even count it.
+            # If this paragraph is less than 25 characters
+            # don't even count it.
             if inner_text_len < MIN_LEN:
                 continue
 
@@ -222,7 +275,8 @@ class Document:
                 ordered.append(parent_node)
 
             if grand_parent_node is not None and grand_parent_node not in candidates:
-                candidates[grand_parent_node] = self.score_node(grand_parent_node)
+                candidates[grand_parent_node] = self.score_node(
+                    grand_parent_node)
                 ordered.append(grand_parent_node)
 
             content_score = 1
@@ -236,13 +290,18 @@ class Document:
             if grand_parent_node is not None:
                 candidates[grand_parent_node]['content_score'] += content_score / 2.0
 
-        # Scale the final candidates score based on link density. Good content should have a
-        # relatively small link density (5% or less) and be mostly unaffected by this operation.
+        # Scale the final candidates score based on link density. Good content
+        # should have a relatively small link density (5% or less) and be
+        # mostly unaffected by this operation.
         for elem in ordered:
             candidate = candidates[elem]
             ld = self.get_link_density(elem)
             score = candidate['content_score']
-            self.debug("Candid: %6.3f %s link density %.3f -> %6.3f" % (score, describe(elem), ld, score*(1-ld)))
+            self.debug("Candid: %6.3f %s link density %.3f -> %6.3f" % (
+                score,
+                describe(elem),
+                ld,
+                score * (1 - ld)))
             candidate['content_score'] *= (1 - ld)
 
         return candidates
@@ -282,8 +341,8 @@ class Document:
         }
 
     def debug(self, *a):
-        #if self.options['debug']:
-            logging.debug(*a)
+        if self.options.get('debug', False):
+            log.debug(*a)
 
     def remove_unlikely_candidates(self):
         for elem in self.html.iter():
@@ -297,10 +356,14 @@ class Document:
 
     def transform_misused_divs_into_paragraphs(self):
         for elem in self.tags(self.html, 'div'):
-            # transform <div>s that do not contain other block elements into <p>s
-            #FIXME: The current implementation ignores all descendants that are not direct children of elem
-            # This results in incorrect results in case there is an <img> buried within an <a> for example
-            if not REGEXES['divToPElementsRe'].search(unicode(''.join(map(tostring, list(elem))))):
+            # transform <div>s that do not contain other block elements into
+            # <p>s
+            #FIXME: The current implementation ignores all descendants that
+            # are not direct children of elem
+            # This results in incorrect results in case there is an <img>
+            # buried within an <a> for example
+            if not REGEXES['divToPElementsRe'].search(
+                    unicode(''.join(map(tostring, list(elem))))):
                 #self.debug("Altering %s to p" % (describe(elem)))
                 elem.tag = "p"
                 #print "Fixed element "+describe(elem)
@@ -335,7 +398,8 @@ class Document:
                 yield e
 
     def sanitize(self, node, candidates):
-        MIN_LEN = self.options.get('min_text_length', self.TEXT_LENGTH_THRESHOLD)
+        MIN_LEN = self.options.get('min_text_length',
+            self.TEXT_LENGTH_THRESHOLD)
         for header in self.tags(node, "h1", "h2", "h3", "h4", "h5", "h6"):
             if self.class_weight(header) < 0 or self.get_link_density(header) > 0.33:
                 header.drop_tree()
@@ -362,10 +426,11 @@ class Document:
             elif el.text_content().count(",") < 10:
                 counts = {}
                 for kind in ['p', 'img', 'li', 'a', 'embed', 'input']:
-                    counts[kind] = len(el.findall('.//%s' %kind))
+                    counts[kind] = len(el.findall('.//%s' % kind))
                 counts["li"] -= 100
 
-                content_length = text_length(el) # Count the text length excluding any surrounding whitespace
+                # Count the text length excluding any surrounding whitespace
+                content_length = text_length(el)
                 link_density = self.get_link_density(el)
                 parent_node = el.getparent()
                 if parent_node is not None:
@@ -397,10 +462,12 @@ class Document:
                     reason = "too short content length %s without a single image" % content_length
                     to_remove = True
                 elif weight < 25 and link_density > 0.2:
-                        reason = "too many links %.3f for its weight %s" % (link_density, weight)
+                        reason = "too many links %.3f for its weight %s" % (
+                            link_density, weight)
                         to_remove = True
                 elif weight >= 25 and link_density > 0.5:
-                    reason = "too many links %.3f for its weight %s" % (link_density, weight)
+                    reason = "too many links %.3f for its weight %s" % (
+                        link_density, weight)
                     to_remove = True
                 elif (counts["embed"] == 1 and content_length < 75) or counts["embed"] > 1:
                     reason = "<embed>s with too short content length, or too many <embed>s"
@@ -426,7 +493,7 @@ class Document:
 
                     #find x non empty preceding and succeeding siblings
                     i, j = 0, 0
-                    x  = 1
+                    x = 1
                     siblings = []
                     for sib in el.itersiblings():
                         #self.debug(sib.text_content())
@@ -445,7 +512,7 @@ class Document:
                             if j == x:
                                 break
                     #self.debug(str(siblings))
-                    if siblings and sum(siblings) > 1000 :
+                    if siblings and sum(siblings) > 1000:
                         to_remove = False
                         self.debug("Allowing %s" % describe(el))
                         for desnode in self.tags(el, "table", "ul", "div"):
@@ -459,7 +526,7 @@ class Document:
                     el.drop_tree()
 
         for el in ([node] + [n for n in node.iter()]):
-            if not (self.options['attributes']):
+            if not self.options.get('attributes', None):
                 #el.attrib = {} #FIXME:Checkout the effects of disabling this
                 pass
 
@@ -492,17 +559,17 @@ class HashableElement():
     def __getattr__(self, tag):
         return getattr(self.node, tag)
 
+
 def main():
     from optparse import OptionParser
     parser = OptionParser(usage="%prog: [options] [file]")
     parser.add_option('-v', '--verbose', action='store_true')
-    parser.add_option('-u', '--url', help="use URL instead of a local file")
+    parser.add_option('-u', '--url', default=None, help="use URL instead of a local file")
     (options, args) = parser.parse_args()
 
     if not (len(args) == 1 or options.url):
         parser.print_help()
         sys.exit(1)
-    logging.basicConfig(level=logging.INFO)
 
     file = None
     if options.url:
@@ -512,7 +579,9 @@ def main():
         file = open(args[0], 'rt')
     enc = sys.__stdout__.encoding or 'utf-8'
     try:
-        print Document(file.read(), debug=options.verbose).summary().encode(enc, 'replace')
+        print Document(file.read(),
+            debug=options.verbose,
+            url=options.url).summary().encode(enc, 'replace')
     finally:
         file.close()
 
