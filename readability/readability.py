@@ -352,7 +352,6 @@ class Document:
             #self.debug(s)
             if REGEXES['unlikelyCandidatesRe'].search(s) and (not REGEXES['okMaybeItsACandidateRe'].search(s)) and elem.tag not in ['html', 'body']:
                 self.debug("Removing unlikely candidate - %s" % describe(elem))
-                import ipdb; ipdb.set_trace()
                 elem.drop_tree()
 
     def transform_misused_divs_into_paragraphs(self):
