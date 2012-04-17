@@ -123,10 +123,10 @@ class Document:
     def short_title(self):
         return shorten_title(self._html(True))
 
-    def summary(self, document_only=False):
+    def summary(self, html_partial=False):
         """Generate the summary of the html docuemnt
 
-        :param document_only: return only the div of the document, don't wrap
+        :param html_partial: return only the div of the document, don't wrap
         in html and body tags.
 
         """
@@ -147,7 +147,7 @@ class Document:
 
                 if best_candidate:
                     article = self.get_article(candidates, best_candidate,
-                            document_only=document_only)
+                            html_partial=html_partial)
                 else:
                     if ruthless:
                         log.debug("ruthless removal did not work. ")
@@ -180,7 +180,7 @@ class Document:
             log.exception('error getting summary: ')
             raise Unparseable(str(e)), None, sys.exc_info()[2]
 
-    def get_article(self, candidates, best_candidate, document_only=False):
+    def get_article(self, candidates, best_candidate, html_partial=False):
         # Now that we have the top candidate, look through its siblings for
         # content that might also be related.
         # Things like preambles, content split by ads that we removed, etc.
@@ -188,7 +188,7 @@ class Document:
             10,
             best_candidate['content_score'] * 0.2])
         # create a new html document with a html->body->div
-        if document_only:
+        if html_partial:
             output = fragment_fromstring('<div/>')
         else:
             output = document_fromstring('<div/>')
@@ -219,7 +219,7 @@ class Document:
             if append:
                 # We don't want to append directly to output, but the div
                 # in html->body->div
-                if document_only:
+                if html_partial:
                     output.append(sibling)
                 else:
                     output.getchildren()[0].getchildren()[0].append(sibling)

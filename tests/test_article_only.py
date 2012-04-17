@@ -30,10 +30,10 @@ class TestArticleOnly(unittest.TestCase):
         res = doc.summary()
         self.assertEqual('<html><body><div><div class', res[0:27])
 
-    def test_si_sample_doc_only(self):
+    def test_si_sample_html_partial(self):
         """Using the si sample, make sure we can get the article alone."""
         sample = load_sample('si-game.sample.html')
         doc = Document(sample, url='http://sportsillustrated.cnn.com/baseball/mlb/gameflash/2012/04/16/40630_preview.html')
-        res = doc.summary(document_only=True)
+        res = doc.summary(html_partial=True)
         self.assertEqual('<div><div class="', res[0:17])
 
