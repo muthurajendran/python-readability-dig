@@ -28,11 +28,7 @@ bin/python:
 
 .PHONY: clean_venv
 clean_venv:
-<<<<<<< HEAD
 	rm -rf bin include lib local man
-=======
-	rm -rf lib include local bin man
->>>>>>> 521eea5... ls
 
 develop: lib/python*/site-packages/bookie-api.egg-link
 lib/python*/site-packages/bookie-api.egg-link:
