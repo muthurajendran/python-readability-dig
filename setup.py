@@ -9,7 +9,7 @@ else:
 
 setup(
     name="readability-lxml",
-    version="0.3",
+    version="0.3.0.1",
     author="Yuri Baburov",
     author_email="burchik@gmail.com",
     description="fast python port of arc90's readability tool",

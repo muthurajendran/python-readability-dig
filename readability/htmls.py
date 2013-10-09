@@ -11,20 +11,10 @@ def build_doc(page):
     if isinstance(page, unicode):
         page_unicode = page
     else:
-        enc = get_encoding(page)
-        if enc:
-            page_unicode = page.decode(enc, 'replace')
-            encoding = enc
-        else:
-            try:
-                #try utf-8
-                page_unicode = page.decode('utf-8', 'strict')
-                encoding = 'utf-8'
-            except UnicodeDecodeError:
-                page_unicode = page.decode('utf-8', 'replace')
-                encoding = 'utf-8'
+        enc = get_encoding(page) or 'utf-8'
+        page_unicode = page.decode(enc, 'replace')
     doc = lxml.html.document_fromstring(page_unicode.encode('utf-8', 'replace'), parser=utf8_parser)
-    return doc, encoding
+    return doc, enc
 
 def js_re(src, pattern, flags, repl):
     return re.compile(pattern, flags).sub(src, repl.replace('$', '\\'))
