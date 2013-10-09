@@ -1,9 +1,15 @@
 #!/usr/bin/env python
 from setuptools import setup, find_packages
+import sys
+
+if sys.platform == 'darwin':
+    lxml = "lxml<2.4"
+else:
+    lxml = "lxml"
 
 setup(
     name="readability-lxml",
-    version="0.2.6.1",
+    version="0.3",
     author="Yuri Baburov",
     author_email="burchik@gmail.com",
     description="fast python port of arc90's readability tool",
@@ -14,7 +20,7 @@ setup(
     packages=['readability'],
     install_requires=[
         "chardet",
-        "lxml"
+        lxml
         ],
     classifiers=[
         "Environment :: Web Environment",

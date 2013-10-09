@@ -3,9 +3,7 @@ from encoding import get_encoding
 from lxml.html import tostring
 import logging
 import lxml.html
-import re
-
-logging.getLogger().setLevel(logging.DEBUG)
+import re, sys
 
 utf8_parser = lxml.html.HTMLParser(encoding='utf-8')
 
@@ -14,9 +12,19 @@ def build_doc(page):
         page_unicode = page
     else:
         enc = get_encoding(page)
-        page_unicode = page.decode(enc, 'replace')
+        if enc:
+            page_unicode = page.decode(enc, 'replace')
+            encoding = enc
+        else:
+            try:
+                #try utf-8
+                page_unicode = page.decode('utf-8', 'strict')
+                encoding = 'utf-8'
+            except UnicodeDecodeError:
+                page_unicode = page.decode('utf-8', 'replace')
+                encoding = 'utf-8'
     doc = lxml.html.document_fromstring(page_unicode.encode('utf-8', 'replace'), parser=utf8_parser)
-    return doc
+    return doc, encoding
 
 def js_re(src, pattern, flags, repl):
     return re.compile(pattern, flags).sub(src, repl.replace('$', '\\'))
@@ -111,5 +119,5 @@ def get_body(doc):
         #BeautifulSoup(cleaned) #FIXME do we really need to try loading it?
         return cleaned
     except Exception: #FIXME find the equivalent lxml error
-        logging.error("cleansing broke html content: %s\n---------\n%s" % (raw_html, cleaned))
+        #logging.error("cleansing broke html content: %s\n---------\n%s" % (raw_html, cleaned))
         return raw_html
