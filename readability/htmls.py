@@ -9,6 +9,7 @@ utf8_parser = lxml.html.HTMLParser(encoding='utf-8')
 
 def build_doc(page):
     if isinstance(page, unicode):
+        enc = None
         page_unicode = page
     else:
         enc = get_encoding(page) or 'utf-8'
