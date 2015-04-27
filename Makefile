@@ -1,9 +1,9 @@
 # Makefile to help automate tasks
 WD := $(shell pwd)
-PY := bin/python
-PIP := bin/pip
-PEP8 := bin/pep8
-NOSE := bin/nosetests
+PY := .env/bin/python
+PIP := .env/bin/pip
+PEP8 := .env/bin/pep8
+NOSE := .env/bin/nosetests
 
 
 # ###########
@@ -24,14 +24,14 @@ all: venv develop
 
 venv: bin/python
 bin/python:
-	virtualenv .
+	virtualenv .env
 
 .PHONY: clean_venv
 clean_venv:
-	rm -rf bin include lib local man
+	rm -rf .env
 
-develop: lib/python*/site-packages/bookie-api.egg-link
-lib/python*/site-packages/bookie-api.egg-link:
+develop: .env/lib/python*/site-packages/readability-lxml.egg-link
+.env/lib/python*/site-packages/readability-lxml.egg-link:
 	$(PY) setup.py develop
 
 
