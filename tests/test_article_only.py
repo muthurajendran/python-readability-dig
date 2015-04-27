@@ -37,3 +37,10 @@ class TestArticleOnly(unittest.TestCase):
         res = doc.summary(html_partial=True)
         self.assertEqual('<div><div class="', res[0:17])
 
+    def test_too_many_images_sample_html_partial(self):
+        """Using the too-many-images sample, make sure we still get the article."""
+        sample = load_sample('too-many-images.sample.html')
+        doc = Document(sample)
+        res = doc.summary(html_partial=True)
+        self.assertEqual('<div><div class="post-body', res[0:26])
+
