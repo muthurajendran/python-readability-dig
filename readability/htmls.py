@@ -1,9 +1,10 @@
-from cleaners import normalize_spaces, clean_attributes
-from encoding import get_encoding
 from lxml.html import tostring
 import logging
 import lxml.html
 import re, sys
+
+from .cleaners import normalize_spaces, clean_attributes
+from .encoding import get_encoding
 
 utf8_parser = lxml.html.HTMLParser(encoding='utf-8')
 

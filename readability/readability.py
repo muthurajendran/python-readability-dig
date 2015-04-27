@@ -9,12 +9,12 @@ from lxml.etree import tounicode
 from lxml.html import document_fromstring
 from lxml.html import fragment_fromstring
 
-from cleaners import clean_attributes
-from cleaners import html_cleaner
-from htmls import build_doc
-from htmls import get_body
-from htmls import get_title
-from htmls import shorten_title
+from .cleaners import clean_attributes
+from .cleaners import html_cleaner
+from .htmls import build_doc
+from .htmls import get_body
+from .htmls import get_title
+from .htmls import shorten_title
 
 
 logging.basicConfig(level=logging.INFO)
