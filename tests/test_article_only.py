@@ -44,3 +44,9 @@ class TestArticleOnly(unittest.TestCase):
         res = doc.summary(html_partial=True)
         self.assertEqual('<div><div class="post-body', res[0:26])
 
+    def test_wrong_link_issue_49(self):
+        """We shouldn't break on bad HTML."""
+        sample = load_sample('the-hurricane-rubin-carter-denzel-washington.html')
+        doc = Document(sample)
+        res = doc.summary(html_partial=True)
+        self.assertEqual('<div><div class="content__article-body ', res[0:39])
