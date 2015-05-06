@@ -213,7 +213,7 @@ class Document:
             output = document_fromstring('<div/>')
         best_elem = best_candidate['elem']
         parent = best_elem.getparent()
-        siblings = parent.getchildren() if parent else [best_elem]
+        siblings = parent.getchildren() if parent is not None else [best_elem]
         for sibling in siblings:
             # in lxml there no concept of simple text
             # if isinstance(sibling, NavigableString): continue

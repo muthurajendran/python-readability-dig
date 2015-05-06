@@ -55,3 +55,4 @@ Updates
 
  - 0.3 Added Document.encoding, positive_keywords and negative_keywords
  - 0.4 Added Videos loading and allowed more images per paragraph
+ - 0.5 Preparing a release to support Python versions 2.6, 2.7, 3.3 and 3.4
