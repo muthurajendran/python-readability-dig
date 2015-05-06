@@ -212,7 +212,9 @@ class Document:
         else:
             output = document_fromstring('<div/>')
         best_elem = best_candidate['elem']
-        for sibling in best_elem.getparent().getchildren():
+        parent = best_elem.getparent()
+        siblings = parent.getchildren() if parent else [best_elem]
+        for sibling in siblings:
             # in lxml there no concept of simple text
             # if isinstance(sibling, NavigableString): continue
             append = False
