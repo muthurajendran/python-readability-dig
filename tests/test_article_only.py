@@ -50,3 +50,14 @@ class TestArticleOnly(unittest.TestCase):
         doc = Document(sample)
         res = doc.summary(html_partial=True)
         self.assertEqual('<div><div class="content__article-body ', res[0:39])
+
+    def test_best_elem_is_root_and_passing(self):
+        sample = (
+            '<html class="article" id="body">'
+            '   <body>'
+            '       <p>1234567890123456789012345</p>'
+            '   </body>'
+            '</html>'
+        )
+        doc = Document(sample)
+        doc.summary()
