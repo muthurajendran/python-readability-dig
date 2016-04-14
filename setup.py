@@ -27,7 +27,7 @@ setup(
         "chardet",
         lxml_requirement,
         "cssselect",
-        "deque"
+        "collections"
         ],
     classifiers=[
         "Environment :: Web Environment",
