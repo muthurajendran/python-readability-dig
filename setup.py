@@ -13,7 +13,7 @@ if sys.platform == 'darwin':
 
 setup(
     name="readability-dig",
-    version="0.1",
+    version="0.2",
     author="Muthu Rajendran R G",
     author_email="muthurajendranrg@gmail.com",
     description="Modified arc90's scraping hub port readability tool for dig data",
