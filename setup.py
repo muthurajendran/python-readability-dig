@@ -12,11 +12,11 @@ if sys.platform == 'darwin':
         lxml_requirement = "lxml<2.4"
 
 setup(
-    name="readability-lxml",
-    version="0.5.1",
-    author="Yuri Baburov",
-    author_email="burchik@gmail.com",
-    description="fast python port of arc90's readability tool",
+    name="readability-dig",
+    version="0.1",
+    author="Muthu Rajendran R G",
+    author_email="muthurajendranrg@gmail.com",
+    description="Modified arc90's scraping hub port readability tool for dig data",
     test_suite = "tests.test_article_only",
     long_description=open("README").read(),
     license="Apache License 2.0",
@@ -25,7 +25,8 @@ setup(
     install_requires=[
         "chardet",
         lxml_requirement,
-        "cssselect"
+        "cssselect",
+        "deque"
         ],
     classifiers=[
         "Environment :: Web Environment",
