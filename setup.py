@@ -13,12 +13,12 @@ if sys.platform == 'darwin':
 
 setup(
     name="readability-dig",
-    version="0.2",
+    version="0.3",
     author="Muthu Rajendran R G",
     author_email="muthurajendranrg@gmail.com",
     description="Modified arc90's scraping hub port readability tool for dig data",
     test_suite = "tests.test_article_only",
-    long_description=open("README.md").read(),
+    long_description=open("README").read(),
     license="Apache License 2.0",
     url="https://github.com/muthurajendran/python-readability-dig",
     download_url = 'https://github.com/muthurajendran/python-readability-dig/tarball/0.1',
