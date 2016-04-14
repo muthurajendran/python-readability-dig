@@ -13,7 +13,7 @@ if sys.platform == 'darwin':
 
 setup(
     name="readability-dig",
-    version="0.3",
+    version="0.5",
     author="Muthu Rajendran R G",
     author_email="muthurajendranrg@gmail.com",
     description="Modified arc90's scraping hub port readability tool for dig data",
@@ -26,8 +26,7 @@ setup(
     install_requires=[
         "chardet",
         lxml_requirement,
-        "cssselect",
-        "collections"
+        "cssselect"
         ],
     classifiers=[
         "Environment :: Web Environment",
